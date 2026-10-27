@@ -179,6 +179,16 @@ class _PlayerScreenState extends State<PlayerScreen> {
     _start();
   }
 
+  /// Seeks VOD by [secs] (RTL: the left arrow moves forward).
+  void _seekBy(int secs) {
+    if (_item.isLive) return;
+    final d = _player.state.duration;
+    var t = _player.state.position + Duration(seconds: secs);
+    if (t < Duration.zero) t = Duration.zero;
+    if (d > Duration.zero && t > d) t = d;
+    _player.seek(t);
+  }
+
   void _saveProgress({bool finished = false}) {
     if (_item.isLive || !mounted) return;
     final dur = _player.state.duration;
@@ -252,6 +262,22 @@ class _PlayerScreenState extends State<PlayerScreen> {
         const SingleActivator(LogicalKeyboardKey.pageUp): () => _go(_index - 1),
         const SingleActivator(LogicalKeyboardKey.pageDown): () => _go(_index + 1),
         const SingleActivator(LogicalKeyboardKey.escape): () => Navigator.of(context).maybePop(),
+        // TV remote / D-pad
+        const SingleActivator(LogicalKeyboardKey.channelUp): () => _go(_index - 1),
+        const SingleActivator(LogicalKeyboardKey.channelDown): () => _go(_index + 1),
+        const SingleActivator(LogicalKeyboardKey.arrowUp): () {
+          if (_item.isLive) _go(_index - 1);
+        },
+        const SingleActivator(LogicalKeyboardKey.arrowDown): () {
+          if (_item.isLive) _go(_index + 1);
+        },
+        const SingleActivator(LogicalKeyboardKey.arrowLeft): () => _seekBy(10),
+        const SingleActivator(LogicalKeyboardKey.arrowRight): () => _seekBy(-10),
+        const SingleActivator(LogicalKeyboardKey.select): () => _player.playOrPause(),
+        const SingleActivator(LogicalKeyboardKey.enter): () => _player.playOrPause(),
+        const SingleActivator(LogicalKeyboardKey.mediaPlayPause): () => _player.playOrPause(),
+        const SingleActivator(LogicalKeyboardKey.mediaFastForward): () => _seekBy(30),
+        const SingleActivator(LogicalKeyboardKey.mediaRewind): () => _seekBy(-30),
       },
       child: Focus(
         autofocus: true,

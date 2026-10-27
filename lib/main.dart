@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:provider/provider.dart';
@@ -31,6 +32,12 @@ class Ra7alApp extends StatelessWidget {
     final s = context.watch<AppState>();
     return MaterialApp(
       title: 'RA7AlTV',
+      // TV remotes: the centre/OK key and gamepad A activate the focused item.
+      shortcuts: {
+        ...WidgetsApp.defaultShortcuts,
+        const SingleActivator(LogicalKeyboardKey.select): const ActivateIntent(),
+        const SingleActivator(LogicalKeyboardKey.gameButtonA): const ActivateIntent(),
+      },
       debugShowCheckedModeBanner: false,
       theme: buildTheme(Brightness.light),
       darkTheme: buildTheme(Brightness.dark),

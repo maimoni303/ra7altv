@@ -112,6 +112,8 @@ ThemeData buildTheme(Brightness b) {
     ),
     textTheme: text,
     dividerColor: t.line,
+    focusColor: t.accent.withValues(alpha: 0.38),
+    hoverColor: t.accent.withValues(alpha: 0.12),
     extensions: [t],
   );
 }

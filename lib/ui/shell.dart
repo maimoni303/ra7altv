@@ -127,6 +127,7 @@ class _ShellState extends State<Shell> {
         color: on ? c.active : Colors.transparent,
         borderRadius: BorderRadius.circular(10),
         child: InkWell(
+          autofocus: on,
           borderRadius: BorderRadius.circular(10),
           onTap: () => go(i),
           child: SizedBox(
