@@ -82,7 +82,39 @@ def spaced_width(draw, text, font, spacing):
     return sum(draw.textlength(ch, font=font) for ch in text) + spacing * (len(text) - 1)
 
 
+WAVE = "sine"
+
+
+def heart_line(draw, x0, x1, y, height, width, dot_r):
+    """Line -> heart -> line, drawn as one continuous stroke (tip of the heart on the line)."""
+    sc = height / 29.0
+    cx = (x0 + x1) / 2
+    cy = y - 15 * sc  # heart bottom tip (param y = -15) sits on the baseline
+
+    def hp(t):
+        hx = 16 * math.sin(t) ** 3
+        hy = 13 * math.cos(t) - 5 * math.cos(2 * t) - 2 * math.cos(3 * t) - math.cos(4 * t)
+        return cx + hx * sc, cy - hy * sc
+
+    pts = []
+    for i in range(300):
+        pts.append((x0 + (cx - x0) * i / 300, y))
+    for i in range(1200):
+        t = math.pi + math.pi * 2 * i / 1200  # pi -> 3pi: left lobe, notch, right lobe
+        pts.append(hp(t))
+    for i in range(301):
+        pts.append((cx + (x1 - cx) * i / 300, y))
+    r = width / 2
+    n = len(pts)
+    for i, (px, py) in enumerate(pts):
+        draw.ellipse([px - r, py - r, px + r, py + r], fill=lerp(STYLE[1], STYLE[2], i / (n - 1)))
+    ex, ey = pts[-1]
+    draw.ellipse([ex - dot_r, ey - dot_r, ex + dot_r, ey + dot_r], fill=STYLE[3])
+
+
 def wave(draw, x0, x1, y, amp, width, dot_r):
+    if WAVE == "heart":
+        return heart_line(draw, x0, x1, y + amp * 1.4, amp * 3.6, width, dot_r)
     pts = []
     n = 400
     for i in range(n + 1):
@@ -166,8 +198,10 @@ if __name__ == "__main__":
     ap.add_argument("--service", default="TV")
     ap.add_argument("--out", default="assets")
     ap.add_argument("--style", default="classic", choices=sorted(STYLES))
+    ap.add_argument("--wave", default="sine", choices=["sine", "heart"])
     a = ap.parse_args()
     STYLE = STYLES[a.style]
+    WAVE = a.wave
     os.makedirs(a.out, exist_ok=True)
     make_icon(a.service, os.path.join(a.out, "icon.png"))
     make_wide(a.service, os.path.join(a.out, "tv_banner.png"), (320, 180))
