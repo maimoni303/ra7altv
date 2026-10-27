@@ -1,0 +1,125 @@
+name: Build RA7AlTV
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+  windows:
+    needs: analyze
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: bash tool/setup_platforms.sh windows
+      - name: Activation hash
+        env:
+          CODE: ${{ secrets.RA7AL_ACTIVATION_CODE }}
+        run: python tool/activation_hash.py >> "$GITHUB_ENV"
+      - run: flutter build windows --release --dart-define=ACT_HASH="${ACT_HASH:-}" --dart-define=ACT_SALT="${ACT_SALT:-}"
+      - name: Package
+        run: |
+          mkdir -p dist
+          cd build/windows/x64/runner/Release
+          7z a -tzip "$GITHUB_WORKSPACE/dist/RA7AlTV-Windows.zip" . >/dev/null
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: dist/RA7AlTV-Windows.zip
+
+  macos:
+    needs: analyze
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: bash tool/setup_platforms.sh macos
+      - name: Activation hash
+        env:
+          CODE: ${{ secrets.RA7AL_ACTIVATION_CODE }}
+        run: python3 tool/activation_hash.py >> "$GITHUB_ENV"
+      - run: flutter build macos --release --dart-define=ACT_HASH="${ACT_HASH:-}" --dart-define=ACT_SALT="${ACT_SALT:-}"
+      - name: Package DMG
+        run: |
+          mkdir -p dist dmg
+          APP=$(ls -d build/macos/Build/Products/Release/*.app | head -1)
+          codesign --force --deep --sign - "$APP" || true
+          cp -R "$APP" dmg/RA7AlTV.app
+          ln -s /Applications dmg/Applications
+          hdiutil create -volname RA7AlTV -srcfolder dmg -ov -format UDZO dist/RA7AlTV-macOS.dmg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: dist/RA7AlTV-macOS.dmg
+
+  ios:
+    needs: analyze
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: bash tool/setup_platforms.sh ios
+      - name: Activation hash
+        env:
+          CODE: ${{ secrets.RA7AL_ACTIVATION_CODE }}
+        run: python3 tool/activation_hash.py >> "$GITHUB_ENV"
+      - run: flutter build ios --release --no-codesign --dart-define=ACT_HASH="${ACT_HASH:-}" --dart-define=ACT_SALT="${ACT_SALT:-}"
+      - name: Package unsigned IPA
+        run: |
+          mkdir -p dist Payload
+          cp -R build/ios/iphoneos/Runner.app Payload/
+          zip -qry dist/RA7AlTV-iPhone-unsigned.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios
+          path: dist/RA7AlTV-iPhone-unsigned.ipa
+
+  release:
+    needs: [windows, macos, ios]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Publish "latest" release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release delete latest --cleanup-tag -y || true
+          gh release create latest dist/* \
+            --target "${{ github.sha }}" \
+            --title "RA7AlTV — أحدث إصدار" \
+            --notes "نسخ ويندوز وماك وآيفون. طريقة التثبيت في ملف README."

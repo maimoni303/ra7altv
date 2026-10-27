@@ -1,0 +1,46 @@
+name: ra7altv
+description: RA7AlTV — free, open-source IPTV player (Xtream Codes, M3U, XMLTV).
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  media_kit: ^1.1.11
+  media_kit_video: ^1.2.4
+  media_kit_libs_video: ^1.0.5
+  provider: ^6.1.2
+  http: ^1.2.2
+  shared_preferences: ^2.3.2
+  flutter_secure_storage: ^9.2.2
+  path_provider: ^2.1.4
+  xml: ^6.5.0
+  crypto: ^3.0.5
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_launcher_icons: ^0.14.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
+
+flutter_launcher_icons:
+  image_path: assets/icon.png
+  ios: true
+  remove_alpha_ios: true
+  macos:
+    generate: true
+    image_path: assets/icon.png
+  windows:
+    generate: true
+    image_path: assets/icon.png
+    icon_size: 256
