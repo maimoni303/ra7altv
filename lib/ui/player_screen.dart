@@ -220,6 +220,81 @@ class _PlayerScreenState extends State<PlayerScreen> {
     super.dispose();
   }
 
+
+  // ---- bottom bar: previous / next, audio and subtitles ----
+  Widget _barButton(IconData icon, String label, VoidCallback? onPressed) => TextButton.icon(
+        onPressed: onPressed,
+        style: TextButton.styleFrom(
+          foregroundColor: Colors.white,
+          disabledForegroundColor: Colors.white38,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          minimumSize: const Size(44, 44),
+        ),
+        icon: Icon(icon, size: 22),
+        label: Text(label, style: const TextStyle(fontSize: 13)),
+      );
+
+  List<Widget> _navButtons() {
+    if (widget.items.length < 2) return const [];
+    final live = _item.isLive;
+    return [
+      _barButton(Icons.skip_previous_rounded, live ? 'القناة السابقة' : 'السابقة',
+          _index > 0 ? () => _go(_index - 1) : null),
+      _barButton(Icons.skip_next_rounded, live ? 'القناة التالية' : 'التالية',
+          _index < widget.items.length - 1 ? () => _go(_index + 1) : null),
+    ];
+  }
+
+  List<Widget> _trackButtons() => [
+        _barButton(Icons.audiotrack_rounded, 'الصوت', () => _pickTrack(audio: true)),
+        _barButton(Icons.closed_caption_rounded, 'الترجمة', () => _pickTrack(audio: false)),
+      ];
+
+  String _trackLabel(String id, String? title, String? lang) {
+    if (id == 'auto') return 'تلقائي';
+    if (id == 'no') return 'إيقاف';
+    final parts = [if (title != null && title.isNotEmpty) title, if (lang != null && lang.isNotEmpty) lang.toUpperCase()];
+    return parts.isEmpty ? 'مسار $id' : parts.join(' · ');
+  }
+
+  Future<void> _pickTrack({required bool audio}) async {
+    final tracks = _player.state.tracks;
+    final current = _player.state.track;
+    final entries = audio
+        ? tracks.audio.map((t) => (id: t.id, label: _trackLabel(t.id, t.title, t.language), on: t == current.audio, apply: () => _player.setAudioTrack(t))).toList()
+        : tracks.subtitle.map((t) => (id: t.id, label: _trackLabel(t.id, t.title, t.language), on: t == current.subtitle, apply: () => _player.setSubtitleTrack(t))).toList();
+    final accent = Ra7al.dark.accent;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF0E1530),
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: ListView(shrinkWrap: true, padding: const EdgeInsets.only(bottom: 16), children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+            child: Text(audio ? 'الصوت' : 'الترجمة',
+                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+          ),
+          if (entries.length <= 2 && !audio)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Text('لا توجد ترجمات مضمّنة في هذا الملف', style: TextStyle(color: Color(0xFFA9B4D6))),
+            ),
+          for (final e in entries)
+            ListTile(
+              autofocus: e.on,
+              title: Text(e.label, style: const TextStyle(color: Colors.white)),
+              trailing: e.on ? Icon(Icons.check_rounded, color: accent) : null,
+              onTap: () {
+                e.apply();
+                Navigator.pop(ctx);
+              },
+            ),
+        ]),
+      ),
+    );
+  }
+
   List<Widget> _topBar() => [
         IconButton(
           tooltip: 'رجوع',
@@ -237,20 +312,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
             Text(_item.subtitle, style: const TextStyle(color: Color(0xFFC8D0EA), fontSize: 13)),
           ]),
         ),
-        if (widget.items.length > 1) ...[
-          IconButton(
-            tooltip: _item.isLive ? 'القناة السابقة' : 'السابق',
-            color: Colors.white,
-            onPressed: _index > 0 ? () => _go(_index - 1) : null,
-            icon: const Icon(Icons.skip_next_rounded), // RTL: "previous" points right
-          ),
-          IconButton(
-            tooltip: _item.isLive ? 'القناة التالية' : 'التالي',
-            color: Colors.white,
-            onPressed: _index < widget.items.length - 1 ? () => _go(_index + 1) : null,
-            icon: const Icon(Icons.skip_previous_rounded),
-          ),
-        ],
       ];
 
   @override
@@ -287,21 +348,55 @@ class _PlayerScreenState extends State<PlayerScreen> {
             MaterialVideoControlsTheme(
               normal: MaterialVideoControlsThemeData(
                 topButtonBar: _topBar(),
+                primaryButtonBar: [const Spacer(), MaterialPlayOrPauseButton(iconSize: 56), const Spacer()],
+                bottomButtonBar: [
+                  if (!_item.isLive) MaterialPositionIndicator(),
+                  const Spacer(),
+                  ..._navButtons(),
+                  ..._trackButtons(),
+                  MaterialFullscreenButton(),
+                ],
                 seekBarPositionColor: accent,
                 seekBarThumbColor: accent,
                 seekOnDoubleTap: !_item.isLive,
               ),
               fullscreen: MaterialVideoControlsThemeData(
+                primaryButtonBar: [const Spacer(), MaterialPlayOrPauseButton(iconSize: 56), const Spacer()],
+                bottomButtonBar: [
+                  if (!_item.isLive) MaterialPositionIndicator(),
+                  const Spacer(),
+                  ..._navButtons(),
+                  ..._trackButtons(),
+                  MaterialFullscreenButton(),
+                ],
                 seekBarPositionColor: accent,
                 seekBarThumbColor: accent,
               ),
               child: MaterialDesktopVideoControlsTheme(
                 normal: MaterialDesktopVideoControlsThemeData(
                   topButtonBar: _topBar(),
+                  bottomButtonBar: [
+                    MaterialDesktopPlayOrPauseButton(),
+                    MaterialDesktopVolumeButton(),
+                    if (!_item.isLive) MaterialDesktopPositionIndicator(),
+                    const Spacer(),
+                    ..._navButtons(),
+                    ..._trackButtons(),
+                    MaterialDesktopFullscreenButton(),
+                  ],
                   seekBarPositionColor: accent,
                   seekBarThumbColor: accent,
                 ),
                 fullscreen: MaterialDesktopVideoControlsThemeData(
+                  bottomButtonBar: [
+                    MaterialDesktopPlayOrPauseButton(),
+                    MaterialDesktopVolumeButton(),
+                    if (!_item.isLive) MaterialDesktopPositionIndicator(),
+                    const Spacer(),
+                    ..._navButtons(),
+                    ..._trackButtons(),
+                    MaterialDesktopFullscreenButton(),
+                  ],
                   seekBarPositionColor: accent,
                   seekBarThumbColor: accent,
                 ),
