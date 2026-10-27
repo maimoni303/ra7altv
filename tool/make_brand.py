@@ -27,8 +27,26 @@ BRIGHT_BLUE = (59, 130, 246)  # end of the gradient, dot, badge
 SUB_GREY = (138, 154, 181)
 
 
+STYLES = {
+    # name: (text gradient stops, wave start, wave end, dot/badge, badge text, glow strength, sub text)
+    "classic":  ([(24, 44, 92), (59, 130, 246)], (20, 34, 70), (40, 80, 160), (59, 130, 246), (255, 255, 255), 0.45, (138, 154, 181)),
+    "neon":     ([(37, 99, 235), (34, 211, 238)], (30, 64, 175), (34, 211, 238), (34, 211, 238), (4, 33, 46), 0.85, (186, 230, 253)),
+    "vibe":     ([(59, 130, 246), (139, 92, 246), (236, 72, 153)], (59, 130, 246), (236, 72, 153), (236, 72, 153), (255, 255, 255), 0.75, (221, 214, 254)),
+    "electric": ([(59, 130, 246), (45, 212, 191)], (59, 130, 246), (163, 230, 53), (163, 230, 53), (20, 35, 5), 0.7, (204, 251, 241)),
+}
+STYLE = STYLES["classic"]
+
+
 def lerp(a, b, t):
     return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
+
+
+def lerp_stops(stops, t):
+    if len(stops) == 2:
+        return lerp(stops[0], stops[1], t)
+    seg = min(int(t * (len(stops) - 1)), len(stops) - 2)
+    local = t * (len(stops) - 1) - seg
+    return lerp(stops[seg], stops[seg + 1], local)
 
 
 def gradient_text(size, text, font, x, y, c0, c1, glow=True):
@@ -41,12 +59,12 @@ def gradient_text(size, text, font, x, y, c0, c1, glow=True):
     gd = ImageDraw.Draw(grad)
     x0, x1 = bbox[0], max(bbox[2], bbox[0] + 1)
     for xx in range(x0, x1):
-        gd.line([(xx, 0), (xx, H)], fill=lerp(c0, c1, (xx - x0) / (x1 - x0)))
+        gd.line([(xx, 0), (xx, H)], fill=lerp_stops(STYLE[0], (xx - x0) / (x1 - x0)))
     layer = Image.new("RGBA", size, (0, 0, 0, 0))
     if glow:
         g = mask.filter(ImageFilter.GaussianBlur(max(4, H // 40)))
-        glow_layer = Image.new("RGBA", size, BRIGHT_BLUE + (0,))
-        glow_layer.putalpha(g.point(lambda v: int(v * 0.45)))
+        glow_layer = Image.new("RGBA", size, STYLE[3] + (0,))
+        glow_layer.putalpha(g.point(lambda v: int(min(255, v * STYLE[5]))))
         layer = Image.alpha_composite(layer, glow_layer)
     text_layer = grad.convert("RGBA")
     text_layer.putalpha(mask)
@@ -77,9 +95,9 @@ def wave(draw, x0, x1, y, amp, width, dot_r):
         t = i / steps
         x = x0 + (x1 - x0) * t
         yy = y - amp * math.sin(t * 2 * math.pi * 0.95 + 0.25)
-        draw.ellipse([x - r, yy - r, x + r, yy + r], fill=lerp((20, 34, 70), (40, 80, 160), t))
+        draw.ellipse([x - r, yy - r, x + r, yy + r], fill=lerp(STYLE[1], STYLE[2], t))
     dp = pts[int(n * 0.47)]
-    draw.ellipse([dp[0] - dot_r, dp[1] - dot_r, dp[0] + dot_r, dp[1] + dot_r], fill=BRIGHT_BLUE)
+    draw.ellipse([dp[0] - dot_r, dp[1] - dot_r, dp[0] + dot_r, dp[1] + dot_r], fill=STYLE[3])
 
 
 def badge(img, cx, cy, text, font, pad_x, pad_y):
@@ -88,8 +106,8 @@ def badge(img, cx, cy, text, font, pad_x, pad_y):
     asc, desc = font.getmetrics()
     h = asc + pad_y * 2
     w = tw + pad_x * 2
-    d.rounded_rectangle([cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2], radius=h / 2, fill=BRIGHT_BLUE)
-    d.text((cx, cy), text, font=font, fill=(255, 255, 255), anchor="mm")
+    d.rounded_rectangle([cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2], radius=h / 2, fill=STYLE[3])
+    d.text((cx, cy), text, font=font, fill=STYLE[4], anchor="mm")
 
 
 def make_icon(service, path, S=1024, K=2):
@@ -107,11 +125,11 @@ def make_icon(service, path, S=1024, K=2):
     f_sub = ImageFont.truetype(LIGHT, int(W * 0.075))
     sp = W * 0.03
     sw = spaced_width(d, "AL3OMR", f_sub, sp)
-    spaced_text(d, (W - sw) / 2, W * 0.665, "AL3OMR", f_sub, SUB_GREY, sp)
+    spaced_text(d, (W - sw) / 2, W * 0.665, "AL3OMR", f_sub, STYLE[6], sp)
     ul_y, ul_h = W * 0.70, max(4, int(W * 0.007))
     for xx in range(int((W - sw) / 2), int((W + sw) / 2)):
         t = (xx - (W - sw) / 2) / sw
-        d.line([(xx, ul_y), (xx, ul_y + ul_h)], fill=lerp((20, 34, 70), BRIGHT_BLUE, t))
+        d.line([(xx, ul_y), (xx, ul_y + ul_h)], fill=lerp_stops(STYLE[0], t))
     if service:
         f_badge = ImageFont.truetype(BLACK, int(W * 0.07))
         badge(img, W / 2, W * 0.835, service.upper(), f_badge, int(W * 0.05), int(W * 0.02))
@@ -131,11 +149,11 @@ def make_wide(service, path, size, K=3, badge_on=True):
     f_sub = ImageFont.truetype(LIGHT, int(H * 0.11))
     sp = H * 0.045
     x0 = bbox[0]
-    x_end = spaced_text(d, x0, H * 0.73, "AL3OMR", f_sub, SUB_GREY, sp)
+    x_end = spaced_text(d, x0, H * 0.73, "AL3OMR", f_sub, STYLE[6], sp)
     ul_y = H * 0.79
     for xx in range(int(x0), int(x_end)):
         t = (xx - x0) / max(1, x_end - x0)
-        d.line([(xx, ul_y), (xx, ul_y + max(2, H * 0.008))], fill=lerp((20, 34, 70), BRIGHT_BLUE, t))
+        d.line([(xx, ul_y), (xx, ul_y + max(2, H * 0.008))], fill=lerp_stops(STYLE[0], t))
     if service and badge_on:
         f_badge = ImageFont.truetype(BLACK, int(H * 0.10))
         bw = d.textlength(service.upper(), font=f_badge) + H * 0.10
@@ -147,7 +165,9 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--service", default="TV")
     ap.add_argument("--out", default="assets")
+    ap.add_argument("--style", default="classic", choices=sorted(STYLES))
     a = ap.parse_args()
+    STYLE = STYLES[a.style]
     os.makedirs(a.out, exist_ok=True)
     make_icon(a.service, os.path.join(a.out, "icon.png"))
     make_wide(a.service, os.path.join(a.out, "tv_banner.png"), (320, 180))

@@ -31,7 +31,7 @@ class Ra7alApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     return MaterialApp(
-      title: 'RA7AlTV',
+      title: 'RA7AL TV',
       // TV remotes: the centre/OK key and gamepad A activate the focused item.
       shortcuts: {
         ...WidgetsApp.defaultShortcuts,

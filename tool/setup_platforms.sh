@@ -21,7 +21,8 @@ case "$PLATFORM" in
   ios)
     PLIST=ios/Runner/Info.plist
     allow_http "$PLIST"
-    pb -c "Set :CFBundleDisplayName RA7AlTV" "$PLIST" || pb -c "Add :CFBundleDisplayName string RA7AlTV" "$PLIST"
+    pb -c "Delete :CFBundleDisplayName" "$PLIST"
+    pb -c "Add :CFBundleDisplayName string RA7AL TV" "$PLIST"
     pb -c "Add :UIBackgroundModes array" "$PLIST"
     pb -c "Add :UIBackgroundModes:0 string audio" "$PLIST"
     pb -c "Add :LSApplicationCategoryType string public.app-category.entertainment" "$PLIST"
@@ -35,7 +36,10 @@ case "$PLATFORM" in
       pb -c "Add :com.apple.security.network.client bool true" "$ENT"
       pb -c "Set :com.apple.security.network.client true" "$ENT"
     done
-    sed -i '' -E 's/^PRODUCT_NAME = .*/PRODUCT_NAME = RA7AlTV/' macos/Runner/Configs/AppInfo.xcconfig
+    sed -i '' -E 's/^PRODUCT_NAME = .*/PRODUCT_NAME = RA7ALTV/' macos/Runner/Configs/AppInfo.xcconfig
+    pb -c "Set :CFBundleName RA7AL TV" macos/Runner/Info.plist
+    pb -c "Delete :CFBundleDisplayName" macos/Runner/Info.plist
+    pb -c "Add :CFBundleDisplayName string RA7AL TV" macos/Runner/Info.plist
     sed -i '' -E 's/MACOSX_DEPLOYMENT_TARGET = 10\.[0-9]+;/MACOSX_DEPLOYMENT_TARGET = 10.15;/g' macos/Runner.xcodeproj/project.pbxproj
     if [ -f macos/Podfile ]; then
       sed -i '' -E "s/^#? *platform :osx, '[0-9.]+'/platform :osx, '10.15'/" macos/Podfile
@@ -48,7 +52,7 @@ p = "android/app/src/main/AndroidManifest.xml"
 s = open(p, encoding="utf-8").read()
 if "android.permission.INTERNET" not in s:
     s = s.replace("<application", '<uses-permission android:name="android.permission.INTERNET"/>\n    <application', 1)
-s = re.sub(r'android:label="[^"]*"', 'android:label="RA7AlTV"', s, count=1)
+s = re.sub(r'android:label="[^"]*"', 'android:label="RA7AL TV"', s, count=1)
 if "usesCleartextTraffic" not in s:
     s = s.replace("<application", '<application\n        android:usesCleartextTraffic="true"', 1)
 # Android TV / Google TV / Fire TV: launcher banner, no touchscreen required.
@@ -69,8 +73,8 @@ PY
     ;;
   windows)
     # Window title and executable description.
-    sed -i 's/L"ra7altv"/L"RA7AlTV"/' windows/runner/main.cpp || true
-    sed -i 's/"FileDescription", "ra7altv"/"FileDescription", "RA7AlTV"/; s/"ProductName", "ra7altv"/"ProductName", "RA7AlTV"/' windows/runner/Runner.rc || true
+    sed -i 's/L"ra7altv"/L"RA7AL TV"/' windows/runner/main.cpp || true
+    sed -i 's/"FileDescription", "ra7altv"/"FileDescription", "RA7AL TV"/; s/"ProductName", "ra7altv"/"ProductName", "RA7AL TV"/' windows/runner/Runner.rc || true
     ;;
 esac
 
