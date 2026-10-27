@@ -81,3 +81,15 @@ flutter run
 ## الترخيص
 
 [GPL-3.0](LICENSE)
+
+## الهوية (RA7AL AL3OMR)
+
+أيقونات كل برامج RA7AL AL3OMR تُولَّد من أداة واحدة، مع تغيير نوع الخدمة فقط:
+
+```
+python3 tool/make_brand.py --service TV --out assets      # RA7AL AL3OMR TV
+python3 tool/make_brand.py --service MEDIA --out assets   # RA7AL AL3OMR MEDIA
+```
+
+تُنتج `icon.png` (أيقونة التطبيق لكل الأنظمة) و `tv_banner.png` (شعار شاشات التلفزيون) و `logo_wide.png`.
+الخط: Montserrat (رخصة SIL OFL).
