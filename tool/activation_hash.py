@@ -6,7 +6,6 @@ and the app runs without an activation screen.
 """
 import hashlib
 import os
-import secrets
 
 ITERATIONS = 120000  # must match lib/services/activation.dart
 
@@ -15,7 +14,9 @@ code = os.environ.get("CODE", "").strip()
 code = code.translate({**{0x0660 + i: 0x30 + i for i in range(10)}, **{0x06F0 + i: 0x30 + i for i in range(10)},
                        0x200B: None, 0x200E: None, 0x200F: None, 0x061C: None, 0xFEFF: None})
 if code:
-    salt = secrets.token_bytes(16)
+    # Fixed salt so the hash only changes when the code changes: app updates
+    # then keep their activation instead of asking for the code again.
+    salt = hashlib.sha256(b"RA7AlTV-activation-v1").digest()[:16]
     digest = hashlib.pbkdf2_hmac("sha256", code.encode("utf-8"), salt, ITERATIONS, 32)
     print(f"ACT_HASH={digest.hex()}")
     print(f"ACT_SALT={salt.hex()}")
