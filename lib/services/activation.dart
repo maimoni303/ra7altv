@@ -23,7 +23,8 @@ class Activation {
     if (!required) return true;
     final salt = _hex(saltHex);
     final expected = hashHex.toLowerCase();
-    final got = await Isolate.run(() => _pbkdf2(utf8.encode(code.trim()), salt, iterations, 32));
+    final input = normalize(code);
+    final got = await Isolate.run(() => _pbkdf2(utf8.encode(input), salt, iterations, 32));
     final gotHex = got.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
     // constant-time compare
     if (gotHex.length != expected.length) return false;
@@ -32,6 +33,24 @@ class Activation {
       diff |= gotHex.codeUnitAt(i) ^ expected.codeUnitAt(i);
     }
     return diff == 0;
+  }
+
+  /// Arabic/Persian keyboards type ٠-٩ / ۰-۹; treat them as 0-9 and drop
+  /// invisible direction marks so the same code always matches.
+  static String normalize(String s) {
+    final b = StringBuffer();
+    for (final r in s.trim().runes) {
+      if (r >= 0x0660 && r <= 0x0669) {
+        b.writeCharCode(0x30 + r - 0x0660);
+      } else if (r >= 0x06F0 && r <= 0x06F9) {
+        b.writeCharCode(0x30 + r - 0x06F0);
+      } else if (r == 0x200B || r == 0x200E || r == 0x200F || r == 0x061C || r == 0xFEFF) {
+        continue;
+      } else {
+        b.writeCharCode(r);
+      }
+    }
+    return b.toString();
   }
 
   static Uint8List _hex(String s) {

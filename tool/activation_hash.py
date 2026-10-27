@@ -11,6 +11,9 @@ import secrets
 ITERATIONS = 120000  # must match lib/services/activation.dart
 
 code = os.environ.get("CODE", "").strip()
+# Same normalisation as the app: Arabic/Persian digits -> 0-9, drop direction marks.
+code = code.translate({**{0x0660 + i: 0x30 + i for i in range(10)}, **{0x06F0 + i: 0x30 + i for i in range(10)},
+                       0x200B: None, 0x200E: None, 0x200F: None, 0x061C: None, 0xFEFF: None})
 if code:
     salt = secrets.token_bytes(16)
     digest = hashlib.pbkdf2_hmac("sha256", code.encode("utf-8"), salt, ITERATIONS, 32)
