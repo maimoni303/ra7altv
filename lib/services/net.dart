@@ -60,7 +60,9 @@ class Net {
       } on SocketException {
         last = NetException('تعذّر الوصول إلى الخادم، تحقق من الرابط والإنترنت');
       } on HandshakeException {
-        last = NetException('مشكلة في شهادة الأمان للخادم. فعّل خيار قبول الشهادات غير الموثوقة');
+        last = NetException(url.startsWith('https')
+            ? 'تعذّر الاتصال الآمن بالخادم. جرّب كتابة الرابط بـ http بدل https'
+            : 'مشكلة في شهادة الأمان للخادم');
       } on FormatException {
         throw NetException('الرابط غير صالح');
       } catch (e) {
@@ -109,8 +111,10 @@ String normalizeServer(String input) {
   var s = input.trim();
   if (s.isEmpty) return s;
   if (!s.startsWith('http://') && !s.startsWith('https://')) s = 'http://$s';
-  final uri = Uri.tryParse(s);
+  var uri = Uri.tryParse(s);
   if (uri == null) return s;
+  // Port 80 is plain HTTP; "https://host:80" can never complete a TLS handshake.
+  if (uri.scheme == 'https' && uri.hasPort && uri.port == 80) uri = uri.replace(scheme: 'http');
   var path = uri.path;
   for (final tail in ['/player_api.php', '/get.php', '/panel_api.php']) {
     if (path.endsWith(tail)) path = path.substring(0, path.length - tail.length);
