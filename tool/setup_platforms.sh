@@ -41,6 +41,19 @@ case "$PLATFORM" in
       sed -i '' -E "s/^#? *platform :osx, '[0-9.]+'/platform :osx, '10.15'/" macos/Podfile
     fi
     ;;
+  android)
+    python3 - <<'PY'
+import re
+p = "android/app/src/main/AndroidManifest.xml"
+s = open(p, encoding="utf-8").read()
+if "android.permission.INTERNET" not in s:
+    s = s.replace("<application", '<uses-permission android:name="android.permission.INTERNET"/>\n    <application', 1)
+s = re.sub(r'android:label="[^"]*"', 'android:label="RA7AlTV"', s, count=1)
+if "usesCleartextTraffic" not in s:
+    s = s.replace("<application", '<application\n        android:usesCleartextTraffic="true"', 1)
+open(p, "w", encoding="utf-8").write(s)
+PY
+    ;;
   windows)
     # Window title and executable description.
     sed -i 's/L"ra7altv"/L"RA7AlTV"/' windows/runner/main.cpp || true
@@ -49,5 +62,18 @@ case "$PLATFORM" in
 esac
 
 flutter pub get >/dev/null
-dart run flutter_launcher_icons >/dev/null || echo "icon generation skipped"
+
+# App icon for this platform only.
+{
+  echo "flutter_launcher_icons:"
+  echo "  image_path: assets/icon.png"
+  case "$PLATFORM" in
+    ios) printf '  ios: true\n  android: false\n  remove_alpha_ios: true\n' ;;
+    android) printf '  android: true\n  ios: false\n  min_sdk_android: 21\n' ;;
+    macos) printf '  ios: false\n  android: false\n  macos:\n    generate: true\n    image_path: assets/icon.png\n' ;;
+    windows) printf '  ios: false\n  android: false\n  windows:\n    generate: true\n    image_path: assets/icon.png\n    icon_size: 256\n' ;;
+  esac
+} > icons.yaml
+dart run flutter_launcher_icons -f icons.yaml || echo "icon generation skipped"
+rm -f icons.yaml
 echo "Platform $PLATFORM ready"

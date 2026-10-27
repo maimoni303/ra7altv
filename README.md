@@ -28,6 +28,7 @@ Free, open-source IPTV player for iPhone, Windows and macOS. No ads, no tracking
 | ويندوز 10/11 | `RA7AlTV-Windows.zip` |
 | ماك (macOS 10.15+) | `RA7AlTV-macOS.dmg` |
 | آيفون (iOS 13+) | `RA7AlTV-iPhone-unsigned.ipa` |
+| أندرويد (5.0+) | `RA7AlTV-Android.apk` |
 
 ## التثبيت
 
@@ -43,6 +44,11 @@ Free, open-source IPTV player for iPhone, Windows and macOS. No ads, no tracking
    ```
    xattr -cr /Applications/RA7AlTV.app
    ```
+
+### أندرويد
+1. نزّل `RA7AlTV-Android.apk` على الجوال.
+2. افتحه، وإن طُلب منك اسمح بـ **التثبيت من مصادر غير معروفة** للمتصفح أو مدير الملفات.
+3. اضغط **تثبيت**.
 
 ### آيفون
 آبل لا تسمح بتشغيل تطبيق غير موقّع، لذلك يُوقَّع بحساب Apple ID الخاص بك:
