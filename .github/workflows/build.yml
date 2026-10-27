@@ -37,11 +37,7 @@ jobs:
           channel: stable
           cache: true
       - run: bash tool/setup_platforms.sh windows
-      - name: Activation hash
-        env:
-          CODE: ${{ secrets.RA7AL_ACTIVATION_CODE }}
-        run: python tool/activation_hash.py >> "$GITHUB_ENV"
-      - run: flutter build windows --release --dart-define=ACT_HASH="${ACT_HASH:-}" --dart-define=ACT_SALT="${ACT_SALT:-}"
+      - run: flutter build windows --release
       - name: Package
         run: |
           mkdir -p dist
@@ -62,11 +58,7 @@ jobs:
           channel: stable
           cache: true
       - run: bash tool/setup_platforms.sh macos
-      - name: Activation hash
-        env:
-          CODE: ${{ secrets.RA7AL_ACTIVATION_CODE }}
-        run: python3 tool/activation_hash.py >> "$GITHUB_ENV"
-      - run: flutter build macos --release --dart-define=ACT_HASH="${ACT_HASH:-}" --dart-define=ACT_SALT="${ACT_SALT:-}"
+      - run: flutter build macos --release
       - name: Package DMG
         run: |
           mkdir -p dist dmg
@@ -90,11 +82,7 @@ jobs:
           channel: stable
           cache: true
       - run: bash tool/setup_platforms.sh ios
-      - name: Activation hash
-        env:
-          CODE: ${{ secrets.RA7AL_ACTIVATION_CODE }}
-        run: python3 tool/activation_hash.py >> "$GITHUB_ENV"
-      - run: flutter build ios --release --no-codesign --dart-define=ACT_HASH="${ACT_HASH:-}" --dart-define=ACT_SALT="${ACT_SALT:-}"
+      - run: flutter build ios --release --no-codesign
       - name: Package unsigned IPA
         run: |
           mkdir -p dist Payload
@@ -119,11 +107,7 @@ jobs:
           channel: stable
           cache: true
       - run: bash tool/setup_platforms.sh android
-      - name: Activation hash
-        env:
-          CODE: ${{ secrets.RA7AL_ACTIVATION_CODE }}
-        run: python3 tool/activation_hash.py >> "$GITHUB_ENV"
-      - run: flutter build apk --release --dart-define=ACT_HASH="${ACT_HASH:-}" --dart-define=ACT_SALT="${ACT_SALT:-}"
+      - run: flutter build apk --release
       - name: Package
         run: |
           mkdir -p dist

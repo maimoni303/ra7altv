@@ -17,7 +17,7 @@ Free, open-source IPTV player for iPhone, Windows and macOS. No ads, no tracking
 - ثيم **داكن وفاتح** تختار بينهما متى شئت
 - عدة اشتراكات، وبياناتها مشفّرة على جهازك فقط (Keychain / Credential Manager)
 - قبول خوادم http والشهادات الذاتية الشائعة عند مزوّدي IPTV
-- رقم تفعيل يُطلب مرة واحدة على كل جهاز (اختياري)
+- يعمل مباشرة بدون رقم تفعيل
 
 ## التحميل
 
