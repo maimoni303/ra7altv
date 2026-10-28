@@ -111,6 +111,16 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 28),
           ],
+          if (s.favoriteVod.isNotEmpty) ...[
+            SectionTitle('أفلامي المفضلة', action: 'الكل', onAction: () => Shell.go(context, 2)),
+            PosterRow(items: s.favoriteVod.map(PosterData.fromVod).toList()),
+            const SizedBox(height: 28),
+          ],
+          if (s.favoriteSeries.isNotEmpty) ...[
+            SectionTitle('مسلسلاتي المفضلة', action: 'الكل', onAction: () => Shell.go(context, 3)),
+            PosterRow(items: s.favoriteSeries.map(PosterData.fromSeries).toList()),
+            const SizedBox(height: 28),
+          ],
           if (s.recentVod.isNotEmpty) ...[
             SectionTitle('أفلام أضيفت مؤخراً', action: 'عرض الكل', onAction: () => Shell.go(context, 2)),
             PosterRow(items: s.recentVod.map(PosterData.fromVod).toList()),

@@ -126,7 +126,7 @@ class _LivePageState extends State<LivePage> {
                 final count = e.key == '*'
                     ? s.library.live.length
                     : e.key == 'fav'
-                        ? s.favorites.length
+                        ? s.favoriteChannels.length
                         : s.library.live.where((x) => x.categoryId == e.key).length;
                 return Material(
                   color: on ? c.active : Colors.transparent,

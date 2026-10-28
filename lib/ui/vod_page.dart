@@ -57,6 +57,7 @@ void showMovieSheet(BuildContext context, VodItem v) {
                   PlayerScreen.open(context, [PlayItem.fromVod(v, key, resumeMs: prog?.finished == false ? prog!.positionMs : 0)], 0);
                 },
               ),
+              FavButton(favKey: AppState.vodKey(v)),
               if (prog != null && !prog.finished)
                 SoftButton(
                   label: 'من البداية',
@@ -80,13 +81,32 @@ class PosterCard extends StatelessWidget {
   const PosterCard({super.key, required this.d, this.width = 140});
   @override
   Widget build(BuildContext context) {
+    final s = context.watch<AppState>();
+    final key = d.vod != null ? AppState.vodKey(d.vod!) : d.series != null ? AppState.seriesKey(d.series!) : '';
+    final fav = key.isNotEmpty && s.isFav(key);
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: () => openPoster(context, d),
+      onLongPress: key.isEmpty ? null : () => s.toggleFav(key),
       child: SizedBox(
         width: width,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          AspectRatio(aspectRatio: 2 / 3, child: NetImage(d.image, radius: 12, icon: Icons.movie_outlined)),
+          AspectRatio(
+            aspectRatio: 2 / 3,
+            child: Stack(fit: StackFit.expand, children: [
+              NetImage(d.image, radius: 12, icon: Icons.movie_outlined),
+              if (fav)
+                PositionedDirectional(
+                  top: 6,
+                  end: 6,
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(gradient: context.brandGradient, shape: BoxShape.circle),
+                    child: const Icon(Icons.favorite_rounded, size: 14, color: Colors.white),
+                  ),
+                ),
+            ]),
+          ),
           const SizedBox(height: 8),
           Text(d.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
         ]),
@@ -135,7 +155,7 @@ class _VodPageState extends State<VodPage> {
         Text(widget.series ? 'المسلسلات' : 'الأفلام', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
         const SizedBox(height: 14),
         CategoryChips(
-          items: [const MapEntry('*', 'الكل'), ...cats.map((c) => MapEntry(c.id, c.name))],
+          items: [const MapEntry('*', 'الكل'), const MapEntry('fav', 'المفضلة'), ...cats.map((c) => MapEntry(c.id, c.name))],
           selected: _cat,
           onSelect: (id) => setState(() => _cat = id),
         ),
@@ -156,6 +176,43 @@ class _VodPageState extends State<VodPage> {
                 ),
         ),
       ]),
+    );
+  }
+}
+
+
+/// Heart toggle used on movie and series pages.
+class FavButton extends StatelessWidget {
+  final String favKey;
+  const FavButton({super.key, required this.favKey});
+  @override
+  Widget build(BuildContext context) {
+    final s = context.watch<AppState>();
+    final c = context.c;
+    final on = s.isFav(favKey);
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      decoration: BoxDecoration(
+        gradient: on ? context.brandGradient : null,
+        color: on ? null : c.active,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: IconButton(
+        tooltip: on ? 'إزالة من المفضلة' : 'إضافة للمفضلة',
+        onPressed: () {
+          s.toggleFav(favKey);
+          ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
+            duration: const Duration(seconds: 1),
+            content: Text(on ? 'أُزيل من المفضلة' : 'أُضيف إلى المفضلة'),
+          ));
+        },
+        icon: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          transitionBuilder: (ch, a) => ScaleTransition(scale: a, child: ch),
+          child: Icon(on ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+              key: ValueKey(on), color: on ? Colors.white : c.text),
+        ),
+      ),
     );
   }
 }

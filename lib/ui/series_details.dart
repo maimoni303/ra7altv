@@ -5,6 +5,7 @@ import '../models.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import 'player_screen.dart';
+import 'vod_page.dart';
 import 'widgets.dart';
 
 class SeriesDetails extends StatefulWidget {
@@ -112,18 +113,21 @@ class _SeriesDetailsState extends State<SeriesDetails> {
               Text(plot, maxLines: 3, overflow: TextOverflow.ellipsis, style: TextStyle(color: c.muted, height: 1.7)),
             ],
             const SizedBox(height: 14),
-            if (resume != null)
-              PrimaryButton(
-                label: 'استكمال ${resume.subtitle}',
-                icon: Icons.play_arrow_rounded,
-                onPressed: () => PlayerScreen.open(context, resumeList, resumeIndex),
-              )
-            else if (eps.isNotEmpty)
-              PrimaryButton(
-                label: 'تشغيل الحلقة الأولى',
-                icon: Icons.play_arrow_rounded,
-                onPressed: () => PlayerScreen.open(context, _playlist(s, eps), 0),
-              ),
+            Wrap(spacing: 10, runSpacing: 10, crossAxisAlignment: WrapCrossAlignment.center, children: [
+              if (resume != null)
+                PrimaryButton(
+                  label: 'استكمال ${resume.subtitle}',
+                  icon: Icons.play_arrow_rounded,
+                  onPressed: () => PlayerScreen.open(context, resumeList, resumeIndex),
+                )
+              else if (eps.isNotEmpty)
+                PrimaryButton(
+                  label: 'تشغيل الحلقة الأولى',
+                  icon: Icons.play_arrow_rounded,
+                  onPressed: () => PlayerScreen.open(context, _playlist(s, eps), 0),
+                ),
+              FavButton(favKey: AppState.seriesKey(widget.series)),
+            ]),
           ]),
         ),
       ]),

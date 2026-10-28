@@ -147,6 +147,12 @@ class AppState extends ChangeNotifier {
 
   List<LiveChannel> get favoriteChannels => library.live.where((c) => favorites.contains(c.id)).toList();
 
+  // Movies and series use prefixed keys so their ids never clash with channels.
+  static String vodKey(VodItem v) => 'vod:${v.id}';
+  static String seriesKey(SeriesItem s) => 'series:${s.id}';
+  List<VodItem> get favoriteVod => library.vod.where((v) => favorites.contains(vodKey(v))).toList();
+  List<SeriesItem> get favoriteSeries => library.series.where((x) => favorites.contains(seriesKey(x))).toList();
+
   // ---- continue watching ----
   WatchEntry? progressFor(String key) {
     for (final h in history) {
@@ -172,10 +178,12 @@ class AppState extends ChangeNotifier {
   // ---- helpers ----
   List<LiveChannel> liveIn(String? catId) =>
       catId == null || catId == '*' ? library.live : library.live.where((c) => c.categoryId == catId).toList();
-  List<VodItem> vodIn(String? catId) =>
-      catId == null || catId == '*' ? library.vod : library.vod.where((c) => c.categoryId == catId).toList();
-  List<SeriesItem> seriesIn(String? catId) =>
-      catId == null || catId == '*' ? library.series : library.series.where((c) => c.categoryId == catId).toList();
+  List<VodItem> vodIn(String? catId) => catId == 'fav'
+      ? favoriteVod
+      : catId == null || catId == '*' ? library.vod : library.vod.where((c) => c.categoryId == catId).toList();
+  List<SeriesItem> seriesIn(String? catId) => catId == 'fav'
+      ? favoriteSeries
+      : catId == null || catId == '*' ? library.series : library.series.where((c) => c.categoryId == catId).toList();
 
   List<VodItem> get recentVod {
     final l = [...library.vod]..sort((a, b) => b.added.compareTo(a.added));
