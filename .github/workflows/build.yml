@@ -107,7 +107,14 @@ jobs:
           channel: stable
           cache: true
       - run: bash tool/setup_platforms.sh android
-      - run: flutter build apk --release
+      - name: Build APK
+        run: |
+          set -o pipefail
+          flutter build apk --release 2>&1 | tee build.log || {
+            grep -E "error|Error|FAILURE|What went wrong|Exception" build.log | tail -25 | sed 's/^/::error::/'
+            tail -40 build.log | sed 's/^/::warning::/'
+            exit 1
+          }
       - name: Package
         run: |
           mkdir -p dist
