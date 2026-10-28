@@ -19,6 +19,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 BLACK = os.path.join(HERE, "brand_fonts", "Montserrat_900Black.ttf")
+BOLD = os.path.join(HERE, "brand_fonts", "Montserrat_700Bold.ttf")  # RA7AL wordmark
 LIGHT = os.path.join(HERE, "brand_fonts", "Montserrat_300Light.ttf")
 
 BG = (10, 10, 10)
@@ -147,7 +148,7 @@ def make_icon(service, path, S=1024, K=2):
     img = Image.new("RGBA", (W, W), BG + (255,))
     d = ImageDraw.Draw(img)
     wave(d, W * 0.20, W * 0.80, W * 0.25, W * 0.045, int(W * 0.018), W * 0.022)
-    f_big = ImageFont.truetype(BLACK, int(W * 0.215))
+    f_big = ImageFont.truetype(BOLD, int(W * 0.215))
     layer, bbox = gradient_text((W, W), "RA7AL", f_big, 0, int(W * 0.47), DARK_BLUE, BRIGHT_BLUE)
     tw = bbox[2] - bbox[0]
     shifted = Image.new("RGBA", (W, W), (0, 0, 0, 0))
@@ -174,7 +175,7 @@ def make_wide(service, path, size, K=3, badge_on=True):
     img = Image.new("RGBA", (W, H), BG + (255,))
     d = ImageDraw.Draw(img)
     wave(d, W * 0.03, W * 0.30, H * 0.47, H * 0.09, max(3, int(H * 0.018)), H * 0.03)
-    f_big = ImageFont.truetype(BLACK, int(H * 0.30))
+    f_big = ImageFont.truetype(BOLD, int(H * 0.30))
     layer, bbox = gradient_text((W, H), "RA7AL", f_big, int(W * 0.37), int(H * 0.40), DARK_BLUE, BRIGHT_BLUE)
     img = Image.alpha_composite(img, layer)
     d = ImageDraw.Draw(img)
@@ -197,8 +198,8 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--service", default="TV")
     ap.add_argument("--out", default="assets")
-    ap.add_argument("--style", default="classic", choices=sorted(STYLES))
-    ap.add_argument("--wave", default="sine", choices=["sine", "heart"])
+    ap.add_argument("--style", default="neon", choices=sorted(STYLES))
+    ap.add_argument("--wave", default="heart", choices=["sine", "heart"])
     a = ap.parse_args()
     STYLE = STYLES[a.style]
     WAVE = a.wave

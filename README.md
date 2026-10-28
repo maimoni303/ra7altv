@@ -87,9 +87,12 @@ flutter run
 أيقونات كل برامج RA7AL AL3OMR تُولَّد من أداة واحدة، مع تغيير نوع الخدمة فقط:
 
 ```
-python3 tool/make_brand.py --service TV --out assets      # RA7AL AL3OMR TV
-python3 tool/make_brand.py --service MEDIA --out assets   # RA7AL AL3OMR MEDIA
+python3 tool/make_brand.py --service TV --out assets          # RA7AL AL3OMR TV (نيون + قلب)
+python3 tool/make_brand.py --service MEDIA --out assets       # RA7AL AL3OMR MEDIA
+python3 tool/make_brand_anim.py --service TV --out docs/brand # الشعار المتحرك MP4 + GIF
 ```
+
+![RA7AL AL3OMR TV](docs/brand/ra7al_tv_logo.gif)
 
 تُنتج `icon.png` (أيقونة التطبيق لكل الأنظمة) و `tv_banner.png` (شعار شاشات التلفزيون) و `logo_wide.png`.
 الخط: Montserrat (رخصة SIL OFL).
