@@ -22,7 +22,13 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - run: flutter analyze --no-fatal-infos --no-fatal-warnings
+      - name: Analyze
+        run: |
+          set -o pipefail
+          flutter analyze --no-fatal-infos --no-fatal-warnings 2>&1 | tee analyze.log || {
+            grep -E "^ *error" analyze.log | head -30 | sed 's/^ */::error::/'
+            exit 1
+          }
 
   windows:
     needs: analyze
