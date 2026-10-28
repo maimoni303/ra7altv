@@ -10,7 +10,7 @@ import 'services/store.dart';
 import 'state/app_state.dart';
 import 'theme.dart';
 import 'ui/activation_screen.dart';
-import 'ui/brand_anim.dart';
+import 'ui/brand_overlay.dart';
 import 'ui/login_screen.dart';
 import 'ui/shell.dart';
 
@@ -65,6 +65,10 @@ class _Ra7alAppState extends State<Ra7alApp> {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
+      navigatorObservers: [BrandNavObserver()],
+      // The brand logo lives above every screen: centre during the intro, then
+      // the top corner (left in Arabic, right in English).
+      builder: (context, child) => BrandOverlay(intro: !s.ready || !_introDone, child: child ?? const SizedBox()),
       home: !s.ready || !_introDone
           ? const _Splash()
           : !s.activated
@@ -79,11 +83,5 @@ class _Ra7alAppState extends State<Ra7alApp> {
 class _Splash extends StatelessWidget {
   const _Splash();
   @override
-  Widget build(BuildContext context) {
-    final w = MediaQuery.sizeOf(context).shortestSide;
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      body: Center(child: AnimatedBrand(service: 'TV', size: (w * 0.7).clamp(220.0, 460.0))),
-    );
-  }
+  Widget build(BuildContext context) => const Scaffold(backgroundColor: Color(0xFF0A0A0A));
 }

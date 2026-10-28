@@ -142,22 +142,39 @@ class PrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.c;
-    return FilledButton(
-      onPressed: busy ? null : onPressed,
-      style: FilledButton.styleFrom(
-        backgroundColor: c.accent,
-        foregroundColor: c.onAccent,
-        minimumSize: const Size(48, 48),
-        padding: const EdgeInsets.symmetric(horizontal: 22),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+    final enabled = onPressed != null && !busy;
+    return AnimatedOpacity(
+      opacity: enabled || busy ? 1 : 0.5,
+      duration: const Duration(milliseconds: 200),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: context.brandGradient,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: c.accent.withValues(alpha: 0.28), blurRadius: 16, offset: const Offset(0, 4))],
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: enabled ? onPressed : null,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 22),
+                child: Row(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.center, children: [
+                  if (busy)
+                    const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white))
+                  else ...[
+                    if (icon != null) ...[Icon(icon, size: 20, color: Colors.white), const SizedBox(width: 8)],
+                    Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Colors.white)),
+                  ],
+                ]),
+              ),
+            ),
+          ),
+        ),
       ),
-      child: busy
-          ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.4, color: c.onAccent))
-          : Row(mainAxisSize: MainAxisSize.min, children: [
-              if (icon != null) ...[Icon(icon, size: 20), const SizedBox(width: 8)],
-              Text(label),
-            ]),
     );
   }
 }

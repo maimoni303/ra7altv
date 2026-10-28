@@ -32,9 +32,9 @@ class Ra7al extends ThemeExtension<Ra7al> {
     text: Color(0xFFF2F5FF),
     muted: Color(0xFFA9B4D6),
     faint: Color(0xFF8F9AC0),
-    accent: Color(0xFF2EC4B6),
-    onAccent: Color(0xFF04211E),
-    brand: Color(0xFF2B59E8),
+    accent: Color(0xFF22D3EE),
+    onAccent: Color(0xFF04212E),
+    brand: Color(0xFF2563EB),
     live: Color(0xFFF08A7E),
     placeholder: Color(0xFF142456),
   );
@@ -49,9 +49,9 @@ class Ra7al extends ThemeExtension<Ra7al> {
     text: Color(0xFF0B1533),
     muted: Color(0xFF4F5B80),
     faint: Color(0xFF5E6A91),
-    accent: Color(0xFF0B7F76),
+    accent: Color(0xFF0E7490),
     onAccent: Color(0xFFFFFFFF),
-    brand: Color(0xFF2B59E8),
+    brand: Color(0xFF2563EB),
     live: Color(0xFFC2412F),
     placeholder: Color(0xFFDCE5FB),
   );
@@ -84,6 +84,9 @@ class Ra7al extends ThemeExtension<Ra7al> {
 
 extension Ra7alX on BuildContext {
   Ra7al get c => Theme.of(this).extension<Ra7al>() ?? Ra7al.dark;
+
+  /// Brand gradient (neon blue -> cyan) used for active and primary elements.
+  LinearGradient get brandGradient => LinearGradient(colors: [c.brand, c.accent]);
 }
 
 ThemeData buildTheme(Brightness b) {
@@ -112,6 +115,13 @@ ThemeData buildTheme(Brightness b) {
     ),
     textTheme: text,
     dividerColor: t.line,
+    pageTransitionsTheme: const PageTransitionsTheme(builders: {
+      TargetPlatform.android: ZoomPageTransitionsBuilder(),
+      TargetPlatform.windows: ZoomPageTransitionsBuilder(),
+      TargetPlatform.macOS: ZoomPageTransitionsBuilder(),
+      TargetPlatform.linux: ZoomPageTransitionsBuilder(),
+      TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+    }),
     focusColor: t.accent.withValues(alpha: 0.38),
     hoverColor: t.accent.withValues(alpha: 0.12),
     extensions: [t],

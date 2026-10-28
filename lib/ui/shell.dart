@@ -8,6 +8,7 @@ import 'live_page.dart';
 import 'search_page.dart';
 import 'settings_page.dart';
 import 'vod_page.dart';
+import 'brand_overlay.dart';
 import 'widgets.dart';
 
 class Shell extends StatefulWidget {
@@ -34,7 +35,11 @@ const _items = [
 
 class _ShellState extends State<Shell> {
   int _index = 0;
-  void go(int i) => setState(() => _index = i);
+  void go(int i) {
+    if (i == _index) return;
+    BrandBus.beat();
+    setState(() => _index = i);
+  }
 
   Widget _page() {
     switch (_index) {
@@ -58,7 +63,19 @@ class _ShellState extends State<Shell> {
     final c = context.c;
     final s = context.watch<AppState>();
     final wide = MediaQuery.sizeOf(context).width >= 900;
-    final body = KeyedSubtree(key: ValueKey(_index), child: _page());
+    final body = AnimatedSwitcher(
+      duration: const Duration(milliseconds: 320),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      transitionBuilder: (child, a) => FadeTransition(
+        opacity: a,
+        child: SlideTransition(
+          position: Tween(begin: const Offset(0, 0.03), end: Offset.zero).animate(a),
+          child: child,
+        ),
+      ),
+      child: KeyedSubtree(key: ValueKey(_index), child: _page()),
+    );
 
     if (wide) {
       return Scaffold(
@@ -68,7 +85,7 @@ class _ShellState extends State<Shell> {
             padding: const EdgeInsets.fromLTRB(16, 28, 16, 20),
             decoration: BoxDecoration(color: c.rail, border: BorderDirectional(end: BorderSide(color: c.line))),
             child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              const Padding(padding: EdgeInsets.fromLTRB(12, 0, 12, 24), child: BrandTitle()),
+              const SizedBox(height: 24),
               for (var i = 0; i < 5; i++) _railItem(i),
               const Spacer(),
               _railItem(5),
@@ -103,7 +120,7 @@ class _ShellState extends State<Shell> {
       body: SafeArea(bottom: false, child: body),
       bottomNavigationBar: NavigationBar(
         backgroundColor: c.rail,
-        indicatorColor: c.active,
+        indicatorColor: c.accent.withValues(alpha: 0.22),
         selectedIndex: sel < 0 ? 0 : sel,
         onDestinationSelected: (i) => go(map[i]),
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
@@ -123,22 +140,31 @@ class _ShellState extends State<Shell> {
     final on = _index == i;
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
-      child: Material(
-        color: on ? c.active : Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
-        child: InkWell(
-          autofocus: on,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeOutCubic,
+        decoration: BoxDecoration(
+          gradient: on ? context.brandGradient : null,
           borderRadius: BorderRadius.circular(10),
-          onTap: () => go(i),
-          child: SizedBox(
-            height: 44,
-            child: Row(children: [
-              const SizedBox(width: 12),
-              Icon(_items[i].icon, size: 20, color: on ? c.text : c.muted),
-              const SizedBox(width: 12),
-              Text(_items[i].label,
-                  style: TextStyle(fontSize: 15, color: on ? c.text : c.muted, fontWeight: on ? FontWeight.w600 : FontWeight.w400)),
-            ]),
+          boxShadow: on ? [BoxShadow(color: c.accent.withValues(alpha: 0.25), blurRadius: 12)] : const [],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            autofocus: on,
+            borderRadius: BorderRadius.circular(10),
+            onTap: () => go(i),
+            child: SizedBox(
+              height: 44,
+              child: Row(children: [
+                const SizedBox(width: 12),
+                Icon(_items[i].icon, size: 20, color: on ? Colors.white : c.muted),
+                const SizedBox(width: 12),
+                Text(_items[i].label,
+                    style: TextStyle(
+                        fontSize: 15, color: on ? Colors.white : c.muted, fontWeight: on ? FontWeight.w600 : FontWeight.w400)),
+              ]),
+            ),
           ),
         ),
       ),

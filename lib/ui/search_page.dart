@@ -32,11 +32,13 @@ class _SearchPageState extends State<SearchPage> {
         q.length < 2 ? const [] : s.library.series.where((e) => e.name.toLowerCase().contains(q)).take(40).toList();
 
     return ListView(padding: EdgeInsets.fromLTRB(pad, wide ? 28 : 16, pad, 32), children: [
-      TextField(
+      Padding(
+        padding: EdgeInsetsDirectional.only(end: wide ? 150 : 120),
+        child: TextField(
         autofocus: true,
         onChanged: (v) => setState(() => _q = v.trim()),
         decoration: fieldDecoration(context, hint: 'ابحث في القنوات والأفلام والمسلسلات', prefix: const Icon(Icons.search_rounded)),
-      ),
+      )),
       const SizedBox(height: 24),
       if (q.length < 2)
         EmptyState(icon: Icons.search_rounded, text: 'اكتب حرفين على الأقل للبحث')

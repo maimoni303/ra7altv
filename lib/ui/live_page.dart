@@ -203,7 +203,7 @@ class _PreviewPanelState extends State<_PreviewPanel> {
     final s = context.watch<AppState>();
     final c = context.c;
     final ch = widget.channel;
-    return ListView(padding: const EdgeInsets.fromLTRB(28, 24, 28, 24), children: [
+    return ListView(padding: const EdgeInsets.fromLTRB(28, 84, 28, 24), children: [
       ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: AspectRatio(

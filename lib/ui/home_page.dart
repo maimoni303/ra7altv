@@ -26,8 +26,10 @@ class HomePage extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.fromLTRB(pad, wide ? 28 : 16, pad, 32),
         children: [
-          Row(children: [
-            if (!wide) ...[const BrandTitle(), const Spacer()],
+          Padding(
+            // keep the top-end corner free for the animated logo
+            padding: EdgeInsetsDirectional.only(end: wide ? 150 : 0),
+            child: Row(children: [
             if (wide)
               Expanded(
                 child: InkWell(
@@ -62,7 +64,8 @@ class HomePage extends StatelessWidget {
               onPressed: () => s.toggleTheme(Theme.of(context).brightness),
               icon: Icon(Theme.of(context).brightness == Brightness.dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined),
             ),
-          ]),
+            if (!wide) const Spacer(),
+          ])),
           if (s.loading) ...[
             const SizedBox(height: 12),
             LinearProgressIndicator(minHeight: 3, color: c.accent, backgroundColor: c.line),

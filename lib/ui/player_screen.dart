@@ -10,6 +10,7 @@ import '../models.dart';
 import '../services/net.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import 'brand_overlay.dart';
 
 class PlayItem {
   final String key, title, subtitle, url, image, kind; // kind: live | movie | episode
@@ -82,6 +83,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   void initState() {
     super.initState();
+    BrandBus.hidden.value = true;
     _configure();
     _subs.addAll([
       _player.stream.error.listen(_onError),
@@ -209,6 +211,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   @override
   void dispose() {
+    BrandBus.hidden.value = false;
     _saveProgress();
     _saveTimer?.cancel();
     _reconnectTimer?.cancel();

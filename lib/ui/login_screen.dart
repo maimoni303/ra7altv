@@ -171,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ]),
         );
     return Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-      const BrandTitle(size: 24),
+      const SizedBox(height: 40),
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const Text('مشغّلك المفتوح\nلكل اشتراكاتك', style: TextStyle(fontSize: 38, height: 1.35, fontWeight: FontWeight.w700)),
         const SizedBox(height: 14),
@@ -209,7 +209,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 Expanded(child: form),
               ])
             : Column(children: [
-                if (!widget.pushed) const Padding(padding: EdgeInsets.only(top: 24), child: BrandTitle()),
                 Expanded(child: form),
               ]),
       ),
